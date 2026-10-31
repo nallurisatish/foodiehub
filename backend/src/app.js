@@ -3,6 +3,9 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 import authRoutes from './routes/authRoutes.js';
 import restaurantRoutes from './routes/restaurantRoutes.js';
@@ -16,12 +19,16 @@ import adminRoutes from './routes/adminRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { getDbStatus } from './config/db.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
 // Security headers
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
+    contentSecurityPolicy: false,
   })
 );
 
@@ -29,7 +36,19 @@ app.use(
 const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 app.use(
   cors({
-    origin: [clientUrl, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: (origin, callback) => {
+      // Allow same-origin, local dev, render domains, or configured client url
+      if (
+        !origin ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        origin.includes('onrender.com') ||
+        (clientUrl && origin === clientUrl)
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-razorpay-signature'],
@@ -76,7 +95,19 @@ app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/coupons', couponRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
-// 404 Route Handler
+// Serve static frontend assets in production (Render single-service deployment)
+const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.originalUrl.startsWith('/api/')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+}
+
+// 404 Route Handler for unmatched API endpoints
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,

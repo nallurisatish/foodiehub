@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: foodiehub
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: ADMIN_EMAIL
+        value: admin@foodiehub.com
+      - key: ADMIN_PASSWORD
+        value: Admin@123456
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
