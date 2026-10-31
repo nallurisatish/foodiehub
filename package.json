@@ -4,7 +4,7 @@
   "description": "FoodieHub — Complete Full-Stack Food Ordering & Delivery Platform",
   "scripts": {
     "start": "node backend/src/server.js",
-    "build": "npm --prefix frontend install && npm --prefix frontend run build && npm --prefix backend install",
+    "build": "npm --prefix frontend install --include=dev && npm --prefix frontend run build && npm --prefix backend install",
     "backend": "npm --prefix backend run dev",
     "frontend": "npm --prefix frontend run dev",
     "seed": "node backend/src/scripts/seedDemoData.js",
