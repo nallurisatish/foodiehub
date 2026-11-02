@@ -8,12 +8,14 @@ import {
   updateProfile,
   addAddress,
   deleteAddress,
+  getGoogleClientId,
 } from '../controllers/authController.js';
 import { authenticate } from '../middleware/authenticate.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
+router.get('/google-client-id', getGoogleClientId);
 router.post('/register', authLimiter, register);
 router.post('/login', authLimiter, login);
 router.post('/google', authLimiter, googleAuth);

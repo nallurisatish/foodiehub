@@ -4,15 +4,19 @@ import { Star, Clock, Bike, MapPin, Tag } from 'lucide-react';
 import { useLocationContext } from '../context/LocationContext';
 
 export default function RestaurantCard({ restaurant }) {
-  if (!restaurant) return null;
+  if (!restaurant || typeof restaurant !== 'object') return null;
 
   const { getLocalizedRestaurant, getRestaurantDeliveryMetrics } = useLocationContext();
-  const localized = getLocalizedRestaurant(restaurant) || restaurant;
-  const metrics = getRestaurantDeliveryMetrics(restaurant);
+  const localized = getLocalizedRestaurant(restaurant) || restaurant || {};
+  const metrics = getRestaurantDeliveryMetrics(restaurant) || {
+    time: '20-25 min',
+    distance: '1.5 km',
+    fee: 0,
+  };
 
   const {
-    _id,
-    name,
+    _id = 'default_id',
+    name = 'Foodie Restaurant',
     cuisineTypes = [],
     image,
     rating = 4.5,
@@ -170,10 +174,10 @@ export default function RestaurantCard({ restaurant }) {
         }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <Clock size={13} color="var(--primary)" />
-            {metrics.time}
+            {metrics?.time || '20-25 min'}
           </span>
           <span>•</span>
-          <span>{metrics.distance} away</span>
+          <span>{metrics?.distance || '1.5 km'} away</span>
         </div>
 
         {/* Cuisines */}

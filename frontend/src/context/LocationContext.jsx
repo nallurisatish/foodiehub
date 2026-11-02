@@ -2,6 +2,19 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const LocationContext = createContext(null);
 
+export const DEFAULT_LOCATION = {
+  id: 'default_location_blr',
+  locality: 'Central Food Hub',
+  city: 'Bengaluru',
+  state: 'Karnataka',
+  pincode: '560001',
+  street: 'Main Road, Central Food District',
+  landmark: 'City Center Hub',
+  coordinates: { lat: 12.9716, lng: 77.5946 },
+  isLiveGPS: true,
+  displayName: 'Central Food Hub, Bengaluru',
+};
+
 // Helper: Haversine distance in km
 export function getDistanceKm(lat1, lon1, lat2, lon2) {
   if (!lat1 || !lon1 || !lat2 || !lon2) return 1.5;
@@ -22,20 +35,14 @@ export const LocationProvider = ({ children }) => {
   const [currentLocation, setCurrentLocation] = useState(() => {
     try {
       const saved = localStorage.getItem('foodiehub_user_location');
-      if (saved) return JSON.parse(saved);
+      if (saved && saved !== 'null' && saved !== 'undefined') {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object' && parsed.locality && parsed.coordinates?.lat) {
+          return { ...DEFAULT_LOCATION, ...parsed };
+        }
+      }
     } catch {}
-    // Initial friendly state while auto-detecting
-    return {
-      locality: 'Current Location',
-      city: 'Detecting...',
-      state: '',
-      pincode: '',
-      street: '',
-      landmark: 'Live Location',
-      coordinates: { lat: 12.9716, lng: 77.5946 },
-      isLiveGPS: true,
-      displayName: 'Locating nearby restaurants...',
-    };
+    return DEFAULT_LOCATION;
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -335,10 +342,28 @@ export const LocationProvider = ({ children }) => {
 
   // Dynamic Localization: places the restaurant outlets as real nearby branches within 0.5 km to 2.8 km of the user's live coordinates
   const getLocalizedRestaurant = (restaurant) => {
-    if (!restaurant) return restaurant;
+    if (!restaurant || typeof restaurant !== 'object') {
+      return {
+        _id: 'fallback_rest',
+        name: 'Foodie Partner',
+        cuisineTypes: ['Multi-Cuisine'],
+        image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80',
+        rating: 4.5,
+        priceForTwo: 400,
+        isOpen: true,
+        distance: '1.5 km',
+        estimatedDeliveryTime: '20-30 min',
+        deliveryFee: 0,
+        address: {
+          locality: 'Central Area',
+          city: 'Bengaluru',
+        },
+      };
+    }
 
-    const userLat = currentLocation.coordinates?.lat || 12.9716;
-    const userLng = currentLocation.coordinates?.lng || 77.5946;
+    const activeLoc = (currentLocation && currentLocation.coordinates) ? currentLocation : DEFAULT_LOCATION;
+    const userLat = activeLoc.coordinates?.lat || 12.9716;
+    const userLng = activeLoc.coordinates?.lng || 77.5946;
 
     // Use deterministic hash of restaurant ID or name
     const str = restaurant._id || restaurant.name || 'rest';
@@ -374,14 +399,14 @@ export const LocationProvider = ({ children }) => {
     const localAddress = {
       doorNo: `Shop ${10 + (positiveHash % 90)}`,
       street: `Main Road, Near ${landmark}`,
-      locality: currentLocation.locality || 'Nearby Food Hub',
-      city: currentLocation.city || 'Your City',
-      state: currentLocation.state || '',
-      pincode: currentLocation.pincode || '',
+      locality: activeLoc.locality || 'Nearby Food Hub',
+      city: activeLoc.city || 'Your City',
+      state: activeLoc.state || '',
+      pincode: activeLoc.pincode || '',
       landmark,
     };
 
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${restLat.toFixed(5)},${restLng.toFixed(5)}+(${encodeURIComponent(restaurant.name + ' ' + (currentLocation.locality || ''))})`;
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${restLat.toFixed(5)},${restLng.toFixed(5)}+(${encodeURIComponent((restaurant.name || 'Restaurant') + ' ' + (activeLoc.locality || ''))})`;
 
     return {
       ...restaurant,
@@ -396,18 +421,21 @@ export const LocationProvider = ({ children }) => {
 
   // Helper to map and sort all restaurants by proximity (nearest first)
   const getNearbyRestaurants = (restaurantsList = []) => {
+    if (!Array.isArray(restaurantsList)) return [];
     return restaurantsList
+      .filter((r) => r && typeof r === 'object')
       .map((r) => getLocalizedRestaurant(r))
-      .sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+      .filter((r) => r && typeof r === 'object' && r.distance)
+      .sort((a, b) => parseFloat(a?.distance || '0') - parseFloat(b?.distance || '0'));
   };
 
   const getRestaurantDeliveryMetrics = (restaurant) => {
     const localRest = getLocalizedRestaurant(restaurant);
     return {
-      distance: localRest.distance || '1.2 km',
-      time: localRest.estimatedDeliveryTime || '20-25 min',
-      fee: localRest.deliveryFee !== undefined ? localRest.deliveryFee : 0,
-      localizedAddress: localRest.address,
+      distance: localRest?.distance || '1.2 km',
+      time: localRest?.estimatedDeliveryTime || '20-25 min',
+      fee: localRest?.deliveryFee !== undefined ? localRest.deliveryFee : 0,
+      localizedAddress: localRest?.address || {},
     };
   };
 

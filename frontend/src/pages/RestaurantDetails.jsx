@@ -37,6 +37,50 @@ export default function RestaurantDetails() {
     getRestaurantDeliveryMetrics,
   } = useLocationContext();
 
+  const { totalItemsCount, grandTotal } = useCart();
+
+  useEffect(() => {
+    const fetchRestaurant = async () => {
+      setLoading(true);
+      try {
+        const res = await restaurantService.getRestaurantById(id);
+        if (res.success && res.restaurant) {
+          setRestaurant(res.restaurant);
+          setMenu(res.menu || []);
+        }
+      } catch (err) {
+        console.error('Failed to load restaurant details:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchRestaurant();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="section-padding" style={{ minHeight: '75vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <LoadingSpinner text="Loading delicious restaurant menu..." />
+      </div>
+    );
+  }
+
+  if (!restaurant) {
+    return (
+      <div className="container section-padding" style={{ textAlign: 'center', minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div>
+          <UtensilsCrossed size={50} color="var(--primary)" style={{ margin: '0 auto 1rem' }} />
+          <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--charcoal)', marginBottom: '0.5rem' }}>Restaurant Not Found</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>The restaurant you are looking for may be temporarily unavailable.</p>
+          <Link to="/restaurants" className="btn btn-primary">Browse All Restaurants</Link>
+        </div>
+      </div>
+    );
+  }
+
   const localRest = getLocalizedRestaurant(restaurant) || restaurant;
   const metrics = getRestaurantDeliveryMetrics(restaurant);
 
@@ -44,7 +88,7 @@ export default function RestaurantDetails() {
     localRest?.googleMapsUrl ||
     restaurant?.googleMapsUrl ||
     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      `${restaurant.name} ${currentLocation.locality || ''} ${currentLocation.city || ''}`
+      `${restaurant.name} ${currentLocation?.locality || ''} ${currentLocation?.city || ''}`
     )}`;
 
   return (
@@ -95,20 +139,20 @@ export default function RestaurantDetails() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', fontSize: '0.85rem', color: '#94a3b8', flexWrap: 'wrap', marginBottom: '0.85rem' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'white', fontWeight: 700 }}>
                   <Clock size={16} color="var(--primary)" />
-                  {metrics.time}
+                  {metrics?.time || '20-30 min'}
                 </span>
                 <span>•</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'white', fontWeight: 700 }}>
                   <MapPin size={16} color="var(--primary)" />
-                  {metrics.distance} away
+                  {metrics?.distance || '1.5 km'} away
                 </span>
                 <span>•</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: metrics.fee === 0 ? '#4ade80' : 'white', fontWeight: 700 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: (metrics?.fee === 0 || !metrics?.fee) ? '#4ade80' : 'white', fontWeight: 700 }}>
                   <Bike size={16} color="var(--primary)" />
-                  {metrics.fee === 0 ? 'Free Delivery' : `₹${metrics.fee} Delivery`}
+                  {(metrics?.fee === 0 || !metrics?.fee) ? 'Free Delivery' : `₹${metrics.fee} Delivery`}
                 </span>
                 <span>•</span>
-                <span>₹{restaurant.priceForTwo} for two</span>
+                <span>₹{restaurant?.priceForTwo || 400} for two</span>
               </div>
 
               {/* Delivering to User Location Pill */}

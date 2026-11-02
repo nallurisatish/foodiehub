@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Food } from '../models/Food.js';
 import { Restaurant } from '../models/Restaurant.js';
 import { isDbLive, memoryStore } from '../utils/dataStore.js';
+import { seedDemoData } from '../scripts/seedDemoData.js';
 
 export const getFoods = async (req, res, next) => {
   try {
@@ -51,9 +52,25 @@ export const getFoods = async (req, res, next) => {
       if (sort === 'priceHigh') sortOptions = { price: -1 };
       if (sort === 'rating') sortOptions = { rating: -1 };
 
-      const foods = await Food.find(query)
+      let foods = await Food.find(query)
         .populate('restaurantId', 'name deliveryFee estimatedDeliveryTime isOpen')
         .sort(sortOptions);
+
+      // Self-healing: If database is connected but foods collection is empty, auto-seed!
+      if (foods.length === 0 && !search && (!category || category === 'all')) {
+        try {
+          const totalInDb = await Food.countDocuments();
+          if (totalInDb === 0) {
+            console.log('⚡ Empty MongoDB foods detected. Auto-seeding foods...');
+            await seedDemoData();
+            foods = await Food.find(query)
+              .populate('restaurantId', 'name deliveryFee estimatedDeliveryTime isOpen')
+              .sort(sortOptions);
+          }
+        } catch (seedErr) {
+          console.warn('Auto-seed foods notice:', seedErr.message);
+        }
+      }
 
       return res.status(200).json({
         success: true,

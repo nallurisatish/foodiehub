@@ -29,6 +29,21 @@ export const seedAdmin = async () => {
       });
 
       console.log(`✅ Administrator created successfully: ${adminEmail}`);
+
+      // Also seed default Demo Customer for rapid evaluation
+      const demoEmail = 'customer.demo@foodiehub.com';
+      const existingDemo = await User.findOne({ email: demoEmail });
+      if (!existingDemo) {
+        await User.create({
+          name: 'Demo Customer',
+          email: demoEmail,
+          passwordHash: 'Customer@123',
+          role: 'customer',
+          phone: '+91 98765 43210',
+        });
+        console.log(`✅ Demo Customer created successfully: ${demoEmail}`);
+      }
+
       return admin;
     } else {
       let existing = memoryStore.users.find((u) => u.email === adminEmail);
@@ -47,6 +62,24 @@ export const seedAdmin = async () => {
         };
         memoryStore.users.push(existing);
         console.log(`✅ In-memory Administrator created: ${adminEmail} / ${adminPassword}`);
+      }
+
+      // Also seed demo customer in memory
+      let existingDemo = memoryStore.users.find((u) => u.email === 'customer.demo@foodiehub.com');
+      if (!existingDemo) {
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash('Customer@123', salt);
+        memoryStore.users.push({
+          _id: new mongoose.Types.ObjectId().toString(),
+          name: 'Demo Customer',
+          email: 'customer.demo@foodiehub.com',
+          passwordHash,
+          role: 'customer',
+          phone: '+91 98765 43210',
+          addresses: [],
+          createdAt: new Date(),
+        });
+        console.log(`✅ In-memory Demo Customer created: customer.demo@foodiehub.com / Customer@123`);
       }
       return existing;
     }

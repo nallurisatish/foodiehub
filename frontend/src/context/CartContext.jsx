@@ -7,7 +7,11 @@ export const CartProvider = ({ children }) => {
   const [items, setItems] = useState(() => {
     try {
       const stored = localStorage.getItem('foodiehub_cart_items');
-      return stored ? JSON.parse(stored) : [];
+      if (stored && stored !== 'null' && stored !== 'undefined') {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed;
+      }
+      return [];
     } catch {
       return [];
     }

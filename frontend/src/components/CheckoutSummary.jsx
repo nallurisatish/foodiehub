@@ -61,12 +61,12 @@ export default function CheckoutSummary({ onPlaceOrder, isSubmitting, paymentMet
               Pickup Kitchen Location
             </span>
             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-              {restaurant.distance || '2.4 km'} away
+              {restaurant?.distance || '2.4 km'} away
             </span>
           </div>
 
           <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--charcoal)', marginBottom: '0.2rem' }}>
-            {restaurant.name}
+            {restaurant?.name || 'Restaurant'}
           </h3>
 
           {restaurant.address && (

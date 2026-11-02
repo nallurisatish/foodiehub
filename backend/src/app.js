@@ -96,8 +96,15 @@ app.use('/api/v1/coupons', couponRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
 // Serve static frontend assets in production (Render single-service deployment)
-const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
-if (fs.existsSync(frontendDistPath)) {
+const possibleFrontendPaths = [
+  path.resolve(__dirname, '../../frontend/dist'),
+  path.resolve(process.cwd(), 'frontend/dist'),
+  path.resolve(process.cwd(), '../frontend/dist'),
+];
+const frontendDistPath = possibleFrontendPaths.find((p) => fs.existsSync(p));
+
+if (frontendDistPath) {
+  console.log(`📦 Serving static frontend from: ${frontendDistPath}`);
   app.use(express.static(frontendDistPath));
   app.get('*', (req, res, next) => {
     if (req.originalUrl.startsWith('/api/')) {
@@ -105,6 +112,8 @@ if (fs.existsSync(frontendDistPath)) {
     }
     res.sendFile(path.join(frontendDistPath, 'index.html'));
   });
+} else {
+  console.warn('⚠️ Frontend dist directory not found! Run "npm run build" before running the production server.');
 }
 
 // 404 Route Handler for unmatched API endpoints

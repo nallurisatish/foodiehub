@@ -125,7 +125,7 @@ export default function Home() {
                     Deliver to
                   </span>
                   <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--charcoal)', display: 'inline-block', lineHeight: 1.2 }}>
-                    {currentLocation.locality}
+                    {currentLocation?.locality || 'Central Food Hub'}
                   </span>
                 </div>
                 <ChevronDown size={14} color="var(--primary)" />
@@ -351,7 +351,7 @@ export default function Home() {
                   alignItems: 'center',
                   gap: '0.25rem',
                 }}>
-                  <MapPin size={11} /> Delivering to {currentLocation.locality}
+                  <MapPin size={11} /> Delivering to {currentLocation?.locality || 'Central Food Hub'}
                 </span>
               </div>
               <h2 style={{ fontSize: '1.9rem', fontWeight: 800, color: 'var(--charcoal)' }}>
@@ -376,6 +376,31 @@ export default function Home() {
 
           {loading ? (
             <LoadingSpinner text="Locating nearby restaurants delivering to you..." />
+          ) : restaurants.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '3rem 1.5rem',
+              backgroundColor: 'white',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--border-color)',
+              boxShadow: 'var(--shadow-sm)',
+            }}>
+              <UtensilsCrossed size={38} color="var(--primary)" style={{ margin: '0 auto 0.75rem' }} />
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--charcoal)', marginBottom: '0.4rem' }}>
+                Loading FoodieHub Catalog...
+              </h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '420px', margin: '0 auto 1.25rem' }}>
+                Connecting to backend restaurant catalogue. If this takes more than a few seconds, click below to retry.
+              </p>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="btn btn-primary btn-sm"
+                style={{ padding: '0.55rem 1.25rem' }}
+              >
+                Refresh
+              </button>
+            </div>
           ) : (
             <div className="grid-restaurants">
               {getNearbyRestaurants(restaurants).slice(0, 8).map((restaurant) => (

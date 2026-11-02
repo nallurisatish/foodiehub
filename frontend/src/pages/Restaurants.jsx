@@ -79,10 +79,12 @@ export default function Restaurants() {
   // Client-side quick filter & proximity sorting logic matching Swiggy / Zomato
   const displayedRestaurants = restaurants
     .filter((restaurant) => {
+      if (!restaurant) return false;
       const metrics = getRestaurantDeliveryMetrics(restaurant);
-      const distNum = parseFloat(metrics.distance);
+      const distNum = parseFloat(metrics?.distance || '1.5');
+      const timeStr = metrics?.time || '';
 
-      if (fastDeliveryOnly && !metrics.time.includes('15') && !metrics.time.includes('20') && !metrics.time.includes('25') && !metrics.time.includes('30')) {
+      if (fastDeliveryOnly && (!timeStr.includes('15') && !timeStr.includes('20') && !timeStr.includes('25') && !timeStr.includes('30'))) {
         return false;
       }
       if (rating4PlusOnly && restaurant.rating < 4.5) {
@@ -110,8 +112,8 @@ export default function Restaurants() {
     })
     .sort((a, b) => {
       if (sortBy === 'nearest') {
-        const distA = parseFloat(getRestaurantDeliveryMetrics(a).distance);
-        const distB = parseFloat(getRestaurantDeliveryMetrics(b).distance);
+        const distA = parseFloat(getRestaurantDeliveryMetrics(a)?.distance || '1.5');
+        const distB = parseFloat(getRestaurantDeliveryMetrics(b)?.distance || '1.5');
         return distA - distB;
       }
       if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);

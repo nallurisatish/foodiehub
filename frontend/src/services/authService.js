@@ -16,6 +16,11 @@ export const authService = {
     return res.data;
   },
 
+  async getGoogleClientId() {
+    const res = await api.get('/auth/google-client-id');
+    return res.data;
+  },
+
   async getMe() {
     const res = await api.get('/auth/me');
     return res.data;

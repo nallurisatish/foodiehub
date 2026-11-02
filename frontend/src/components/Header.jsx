@@ -111,13 +111,13 @@ export default function Header() {
             width: '24px',
             height: '24px',
             borderRadius: '50%',
-            backgroundColor: currentLocation.isLiveGPS ? '#dcfce7' : 'var(--primary-light)',
+            backgroundColor: currentLocation?.isLiveGPS ? '#dcfce7' : 'var(--primary-light)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
           }}>
-            {currentLocation.isLiveGPS ? (
+            {currentLocation?.isLiveGPS ? (
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#16a34a', boxShadow: '0 0 6px #16a34a' }} />
             ) : (
               <MapPin size={14} color="var(--primary)" />
@@ -132,9 +132,9 @@ export default function Header() {
               marginRight: '4px',
               borderBottom: '2px solid var(--charcoal)',
             }}>
-              {currentLocation.locality}
+              {currentLocation?.locality || 'Central Food Hub'}
             </span>
-            {currentLocation.isLiveGPS && (
+            {currentLocation?.isLiveGPS && (
               <span style={{
                 fontSize: '0.65rem',
                 fontWeight: 800,
@@ -148,7 +148,7 @@ export default function Header() {
               </span>
             )}
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              {currentLocation.city}
+              {currentLocation?.city || 'Bengaluru'}
             </span>
           </div>
           <ChevronDown size={14} color="var(--primary)" style={{ flexShrink: 0 }} />

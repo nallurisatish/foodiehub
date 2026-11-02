@@ -29,11 +29,11 @@ export default function Checkout() {
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [newAddress, setNewAddress] = useState({
     label: 'Home',
-    street: `${currentLocation.locality}, Main Road`,
-    landmark: currentLocation.landmark || '',
-    city: currentLocation.city || 'Your City',
-    state: currentLocation.state || '',
-    pincode: currentLocation.pincode || '',
+    street: `${currentLocation?.locality || 'Central Food Hub'}, Main Road`,
+    landmark: currentLocation?.landmark || '',
+    city: currentLocation?.city || 'Bengaluru',
+    state: currentLocation?.state || '',
+    pincode: currentLocation?.pincode || '',
     phone: '',
     name: '',
   });
@@ -47,14 +47,14 @@ export default function Checkout() {
   // Primary delivery address always mirrors the active chosen neighborhood
   const activeLocationAddress = {
     _id: 'active_selected_location',
-    label: currentLocation.isLiveGPS
-      ? `📡 ${currentLocation.locality} (Live GPS Pin)`
-      : `📍 ${currentLocation.locality} (Active Choice)`,
-    street: currentLocation.street || `Door 42, ${currentLocation.locality}, 1st Main Road`,
-    landmark: currentLocation.landmark || 'Near Metro Station',
-    city: currentLocation.city || 'Your City',
-    state: currentLocation.state || '',
-    pincode: currentLocation.pincode || '',
+    label: currentLocation?.isLiveGPS
+      ? `📡 ${currentLocation?.locality || 'Current Area'} (Live GPS Pin)`
+      : `📍 ${currentLocation?.locality || 'Current Area'} (Active Choice)`,
+    street: currentLocation?.street || `Door 42, ${currentLocation?.locality || 'Central Food Hub'}, 1st Main Road`,
+    landmark: currentLocation?.landmark || 'Near Metro Station',
+    city: currentLocation?.city || 'Bengaluru',
+    state: currentLocation?.state || '',
+    pincode: currentLocation?.pincode || '',
     phone: user?.phone || '+91 98765 43210',
     name: user?.name || 'Customer',
   };
