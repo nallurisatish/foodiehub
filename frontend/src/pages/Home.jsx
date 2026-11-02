@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   MapPin,
   ChevronDown,
+  UtensilsCrossed,
 } from 'lucide-react';
 import { restaurantService } from '../services/restaurantService';
 import { foodService } from '../services/foodService';

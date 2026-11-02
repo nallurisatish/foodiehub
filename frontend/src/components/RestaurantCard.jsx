@@ -6,7 +6,7 @@ import { useLocationContext } from '../context/LocationContext';
 export default function RestaurantCard({ restaurant }) {
   if (!restaurant || typeof restaurant !== 'object') return null;
 
-  const { getLocalizedRestaurant, getRestaurantDeliveryMetrics } = useLocationContext();
+  const { currentLocation, getLocalizedRestaurant, getRestaurantDeliveryMetrics } = useLocationContext();
   const localized = getLocalizedRestaurant(restaurant) || restaurant || {};
   const metrics = getRestaurantDeliveryMetrics(restaurant) || {
     time: '20-25 min',

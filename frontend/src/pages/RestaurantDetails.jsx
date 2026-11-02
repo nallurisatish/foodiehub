@@ -60,6 +60,24 @@ export default function RestaurantDetails() {
     }
   }, [id]);
 
+  const categories = [
+    'All',
+    ...Array.from(new Set((menu || []).map((f) => f.category).filter(Boolean))),
+  ];
+
+  const filteredMenu = (menu || []).filter((food) => {
+    if (!food) return false;
+    const matchesSearch =
+      !searchQuery ||
+      food.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      food.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesVeg = !isVegOnly || food.isVegetarian;
+    const matchesCategory =
+      selectedCategory === 'All' ||
+      food.category?.toLowerCase() === selectedCategory?.toLowerCase();
+    return matchesSearch && matchesVeg && matchesCategory;
+  });
+
   if (loading) {
     return (
       <div className="section-padding" style={{ minHeight: '75vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
